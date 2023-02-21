@@ -24,7 +24,7 @@ batch_size = 4
 
 
 # print(os.path.dirname(os.path.abspath(__file__))) 
-data_path = os.getcwd() + os.sep + os.pardir + '/data/raw/plantifydr_dataset/color'
+data_path = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plantifydr_dataset/color'
 print(data_path)
 image_paths = []
 classes = []
