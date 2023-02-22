@@ -24,8 +24,7 @@ batch_size = 4
 
 
 # print(os.path.dirname(os.path.abspath(__file__))) 
-data_path = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plantifydr_dataset/color'
-print(data_path)
+data_path = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plant_village_dataset'
 image_paths = []
 classes = []
 
@@ -56,7 +55,11 @@ class PlantDataset(Dataset):
         
         image_filepath = self.image_paths[index]
         image = cv2.imread(image_filepath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        try :
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        except:
+            print(f"Not a correct file type : {image_filepath}")
+            pass
 
         label = image_filepath.split('/')[-2]
         label = class_to_idx[label]
@@ -122,12 +125,15 @@ if __name__ == '__main__':
 
     net = Net()
 
+    min_valid_loss = np.inf
+
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
 
     for epoch in range(10):
 
-        running_loss = 0.0
+        train_loss = 0.0
         for i,data in enumerate(train_loader,0):
 
             inputs,labels = data
@@ -139,15 +145,38 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
 
-            running_loss += loss.item()
+            train_loss += loss.item()
 
             if i % 100 == 99:
-                print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 100))
-                running_loss = 0.0
+                print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, train_loss / 100))
+                train_loss = 0.0
+
+        valid_loss = 0.0
+        net.eval()     # Optional when not using Model Specific layer
+        
+        for data, labels in valid_loader:
+            # Transfer Data to GPU if available
+            # if torch.cuda.is_available():
+            #     data, labels = data.cuda(), labels.cuda()
+            
+            # Forward Pass
+            target = net(data)
+            # Find the Loss
+            loss = criterion(target,labels)
+            # Calculate Loss
+            valid_loss += loss.item()
+    
+        print(f'Epoch {epoch+1} \t\t Training Loss: {train_loss / len(train_loader)} \t\t Validation Loss: {valid_loss / len(valid_loader)}')
+        
+        if min_valid_loss > valid_loss:
+            print(f'Validation Loss Decreased({min_valid_loss:.6f}--->{valid_loss:.6f})')
+            min_valid_loss = valid_loss
+
+            PATH = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/models/basic_cnn.pth'
+            torch.save(net.state_dict(), PATH)
 
     print(f"Finished Training")
 
-    PATH = './basic_cnn_pth'
-    torch.save(net.state_dict(), PATH)
+    
 
 
