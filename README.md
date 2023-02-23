@@ -1,5 +1,3 @@
-# plant_disease_classification
-=======
 plant_disease_classification
 ==============================
 
