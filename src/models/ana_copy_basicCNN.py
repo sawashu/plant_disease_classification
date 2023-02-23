@@ -39,17 +39,17 @@ validation_transform = transforms.Compose([transforms.ToTensor(), transforms.Nor
 dataset = datasets.ImageFolder(data_dir, transform = train_transform)
 
 # split data into train and validation data
-train_data, validation_data = random_split(dataset, [t, v])
+train_data, validation_data = random_split(dataset, [0.8, 0.2])
 
-
+batch_size = 4
 # pass data to DataLoader
-generates batches of images and corresponding labels
+# generates batches of images and corresponding labels
 train_loader = torch.utils.data.DataLoader(train_data, 
-                                                batch_size = self.batch_size, 
+                                                batch_size = batch_size, 
                                                 shuffle = True)
 
 valid_loader = torch.utils.data.DataLoader(validation_data,
-                                                        batch_size = self.batch_size,
+                                                        batch_size = batch_size,
                                                         shuffle = True)
 
 #  helper function prints images to screen

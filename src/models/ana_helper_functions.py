@@ -6,6 +6,7 @@ import torch.nn as nn
 from torchvision import datasets, transforms
 from torch.utils.data import random_split
 
+import matplotlib.pyplot as plt
 
 from ana_copy_basicCNN import  Net
 
