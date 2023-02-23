@@ -45,7 +45,7 @@ train_data, validation_data = random_split(dataset, [0.8, 0.2])
 
 '''
 ############################################################################################
-Helper functions :
+Other Helper functions :
 ############################################################################################
 '''
 
@@ -127,62 +127,23 @@ We test different parameters for CNN, namely :
 ############################################################################################
 '''
 
-batch_vals = [16]
-loss_vals = [nn.CrossEntropyLoss()] # CHECK IF WORKS LIKE THIS
-optimizer_vals = []
-learning_rate_vals = []
-epoch_vals = []
+# batch_vals = [16]
+# loss_vals = [nn.CrossEntropyLoss()] # CHECK IF WORKS LIKE THIS
+# optimizer_vals = []
+# learning_rate_vals = []
+# epoch_vals = []
 
-# change number of batches
-for batch_val in batch_vals:
+# # change number of batches
+# for batch_val in batch_vals:
 
-    train_l, valid_l = get_t_v_loader(batch_val)
+#     train_l, valid_l = get_t_v_loader(batch_val)
 
-    # change loss value
-    for loss_val in loss_vals:
+#     for loss_val in loss_vals:
          
-# for lambda_val in lambda_vals:
+#          for optimizer_val in optimizer_vals:
+              
+#               for learning_rate_val in learning_rate_vals:
+                   
+#                    net = Net()
 
-    # instantiate ridge regression object
-
-
-    # call to your CV function to compute mse for each fold
-
-
-    # print mse from CV
-    print(f'Ridge regression CV MSE values for lambda {lambda_val}: ', rr_mse_vals)
-    print(f'Ridge MSE mean: {rr_mean}')
-    print(f'Ridge MSE standard deviation: {rr_std}')
-
-    # instantiate lasso object
-
-
-    # call to your CV function to compute mse for each fold
-
-
-    # print mse from CV
-    print(f'Lasso regression CV MSE values for lambda {lambda_val}: ', l_mse_vals)
-    print(f'Lasso MSE mean: {l_mean}')
-    print(f'Lasso MSE standard deviation: {l_std}')
-
-    # keep track of best MSE mean and std for Ridge Regression
-
-
-    # keep track of the best MSE and std for Lasso Regression
-
-
-# instantiate ridge regression and lasso objects for best values of lambda
-
-
-# fit models using all training data
-
-
-# predict on test data
-
-
-# compute mse on test data
-
-
-# print mse on test data
-print(f'MSE for Ridge Regression test data with lambda {best_lambda_r}: {mse_rr}')
-print(f'MSE for Lasso Regression test data with lambda {best_lambda_l}: {mse_l}')
+         

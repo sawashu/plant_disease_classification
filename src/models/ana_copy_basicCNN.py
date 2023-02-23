@@ -2,87 +2,82 @@
 # import packages
 import torch
 from torchvision import datasets, transforms
-# from torch.utils.data import random_split
+from torch.utils.data import random_split
 
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-# import os
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-# class CNN_dataset():
     
-#     def __init__(self, batch_size):
-#         self.batch_size = batch_size
+def __init__(self, batch_size):
+    self.batch_size = batch_size
 
     
-    # def get_train_valid_data(self, t, v):
-        # # https://ryanwingate.com/intro-to-machine-learning/deep-learning-with-pytorch/loading-image-data-into-pytorch/
-        # # specify data directory
-        # # data_dir = '/Users/bean/Documents/plant_disease_classification/data/raw/plantifydr_dataset'
-        # # data_dir = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plantifydr_dataset/color'
-        # data_dir = os.getcwd()  + '/data/raw/plantifydr_dataset/color'
+# https://ryanwingate.com/intro-to-machine-learning/deep-learning-with-pytorch/loading-image-data-into-pytorch/
+# specify data directory
+        # data_dir = '/Users/bean/Documents/plant_disease_classification/data/raw/plantifydr_dataset'
+        # data_dir = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plantifydr_dataset/color'
+data_dir = os.getcwd()  + '/data/raw/plantifydr_dataset/color'
 
 
-        # # define how to transform data and convert to PyTorch tensors
-        # # training data can be resized, flipped, etc.
-        # train_transform = transforms.Compose([transforms.Resize((256, 256)),
-        #                                     transforms.ToTensor(),
-        #                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+# define how to transform data and convert to PyTorch tensors
+# training data can be resized, flipped, etc.
+train_transform = transforms.Compose([transforms.Resize((256, 256)),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-        # # validation data should not be changed other than Normalized
-        # validation_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-
-        # # load image data with datasets.ImageFolder
-        # dataset = datasets.ImageFolder(data_dir, transform = train_transform)
-
-        # split data into train and validation data
-        # train_data, validation_data = random_split(dataset, [t, v])
+# validation data should not be changed other than Normalized
+validation_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 
-        # pass data to DataLoader
-        # generates batches of images and corresponding labels
-        # train_loader = torch.utils.data.DataLoader(train_data, 
-        #                                         batch_size = self.batch_size, 
-        #                                         shuffle = True)
+# load image data with datasets.ImageFolder
+dataset = datasets.ImageFolder(data_dir, transform = train_transform)
 
-        # valid_loader = torch.utils.data.DataLoader(validation_data,
-        #                                                 batch_size = self.batch_size,
-        #                                                 shuffle = True)
+# split data into train and validation data
+train_data, validation_data = random_split(dataset, [t, v])
 
-        # return(train_loader, valid_loader)
 
-    # #  helper function prints images to screen
-    # def imshow(image, ax=None, title=None, normalize=True):
-    #     """Imshow for Tensor."""
-    #     if ax is None:
-    #         fig, ax = plt.subplots()
-    #     image = image.numpy().transpose((1, 2, 0))
+# pass data to DataLoader
+generates batches of images and corresponding labels
+train_loader = torch.utils.data.DataLoader(train_data, 
+                                                batch_size = self.batch_size, 
+                                                shuffle = True)
 
-    #     if normalize:
-    #         mean = np.array([0.5, 0.5, 0.5])
-    #         std = np.array([0.5, 0.5, 0.5])
-    #         image = std * image + mean
-    #         image = np.clip(image, 0, 1)
+valid_loader = torch.utils.data.DataLoader(validation_data,
+                                                        batch_size = self.batch_size,
+                                                        shuffle = True)
 
-    #     ax.imshow(image)
-    #     ax.spines['top'].set_visible(False)
-    #     ax.spines['right'].set_visible(False)
-    #     ax.spines['left'].set_visible(False)
-    #     ax.spines['bottom'].set_visible(False)
-    #     ax.tick_params(axis='both', length=0)
-    #     ax.set_xticklabels('')
-    #     ax.set_yticklabels('')
+#  helper function prints images to screen
+def imshow(image, ax=None, title=None, normalize=True):
+        """Imshow for Tensor."""
+        if ax is None:
+            fig, ax = plt.subplots()
+        image = image.numpy().transpose((1, 2, 0))
 
-    #     return ax
-    #     # calling imshow
-    #     # images, labels = next(iter(train_loader))
-    #     # imshow(images[0], normalize=False);
+        if normalize:
+            mean = np.array([0.5, 0.5, 0.5])
+            std = np.array([0.5, 0.5, 0.5])
+            image = std * image + mean
+            image = np.clip(image, 0, 1)
+
+        ax.imshow(image)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.tick_params(axis='both', length=0)
+        ax.set_xticklabels('')
+        ax.set_yticklabels('')
+
+        return ax
+        # calling imshow
+        # images, labels = next(iter(train_loader))
+        # imshow(images[0], normalize=False);
 
 
 # https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
@@ -109,14 +104,11 @@ class Net(nn.Module):
 
 if __name__ == '__main__':
 
-    # net = Net()
+    net = Net()
 
     # define loss function and optimizer
-    # criterion = nn.CrossEntropyLoss()
-
-    def fit(self, loss, optimizer):
-
-        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
     
     # train the network
     for epoch in range(2):
