@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
     
-def __init__(self, batch_size):
-    self.batch_size = batch_size
+# def __init__(self, batch_size):
+#     self.batch_size = batch_size
 
     
 # https://ryanwingate.com/intro-to-machine-learning/deep-learning-with-pytorch/loading-image-data-into-pytorch/
@@ -32,7 +32,8 @@ train_transform = transforms.Compose([transforms.Resize((256, 256)),
                                             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 # validation data should not be changed other than Normalized
-validation_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+validation_transform = transforms.Compose([transforms.ToTensor(), 
+                                           transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 
 # load image data with datasets.ImageFolder
@@ -108,10 +109,12 @@ if __name__ == '__main__':
 
     # define loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+    # optimizer = optim.Adam(net.parameters(), lr=0.001)
     
+
     # train the network
-    for epoch in range(2):
+    for epoch in range(10):
 
         running_loss = 0.0
         for i,data in enumerate(train_loader,0):
