@@ -11,21 +11,24 @@ import matplotlib.pyplot as plt
 
 from torch.utils.data import DataLoader
 
-from basic_CNN import Net, PlantDataset, transform, batch_size, classes, image_paths
+from basic_CNN import Net, PlantDataset, transform, batch_size, classes
 
 model = Net()
 model.load_state_dict(torch.load(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/models/basic_cnn.pth'))
 # print(model.eval())
-data_path = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plantifydr_dataset/color'
-# image_paths = []
+data_path = os.path.normpath( os.getcwd() + os.sep + os.pardir + os.sep + os.pardir) + '/data/raw/plant_pathology_dataset/test_images'
+print(data_path)
+image_paths = []
 # classes = []
 
-# for path in glob.glob(data_path + '/*'):
+for path in glob.glob(data_path + '/*'):
     # classes.append(path.split('/')[-1])
-    # image_paths.append(glob.glob(path + '/*'))
+    image_paths.append(glob.glob(path + '/*'))
 
 image_paths = list(flatten(image_paths))
 random.shuffle(image_paths)
+
+print(len(image_paths))
 
 idx_to_class = {i:j for i,j in enumerate(classes)}
 class_to_idx = {j:i for i,j in idx_to_class.items()}

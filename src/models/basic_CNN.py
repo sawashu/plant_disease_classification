@@ -17,24 +17,28 @@ import random
 import cv2
 
 import copy
+# from PIL import Image
     
-transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+transform = transforms.Compose([transforms.ToTensor(),transforms.Resize((256,256)),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 batch_size = 4
 
 
 # print(os.path.dirname(os.path.abspath(__file__))) 
-data_path = os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/data/raw/plant_village_dataset'
+data_path = os.path.normpath(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir) + '/data/raw/plantifydr_dataset/color'
 image_paths = []
 classes = []
 
 
 for path in glob.glob(data_path + '/*'):
+    # print(path)
     classes.append(path.split('/')[-1])
     image_paths.append(glob.glob(path + '/*'))
 
 image_paths = list(flatten(image_paths))
 random.shuffle(image_paths)
+
+# print(len(image_paths))
 
 # print(image_paths)
 
@@ -129,7 +133,7 @@ if __name__ == '__main__':
 
     criterion = nn.CrossEntropyLoss()
     # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-    optimizer = optim.Adam(net.parameters(), lr=0.001)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)      
 
     for epoch in range(10):
 
