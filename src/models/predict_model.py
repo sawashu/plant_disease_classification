@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 
 from torch.utils.data import DataLoader
 
-from basic_CNN import Net, PlantDataset, transform, batch_size, classes
+from inception_CNN import Net, PlantDataset, transform, batch_size, classes
 
 model = Net()
-model.load_state_dict(torch.load(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir + '/models/basic_cnn.pth'))
+model.load_state_dict(torch.load(os.path.normpath(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir) + '/models/inception_net_1epoch.pth'))
 # print(model.eval())
-data_path = os.path.normpath( os.getcwd() + os.sep + os.pardir + os.sep + os.pardir) + '/data/raw/plant_pathology_dataset/test_images'
+data_path = os.path.normpath(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir) + '/data/raw/plantifydr_dataset/color'
 print(data_path)
 image_paths = []
 # classes = []
