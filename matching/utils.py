@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from lapsolver import solve_dense
+# from lapsolver import solve_dense
 import time
 
 logging.basicConfig()
@@ -22,7 +22,7 @@ class SimpleCNNContainerConvBlocks(nn.Module):
         We use this one to estimate matched output of conv blocks
 
         num_filters (list) :: number of convolution filters
-        hidden_dims (list) :: number of neurons in hidden layers
+        hidden_dims (list) :: number of neurons in hidden layers 
 
         Assumptions:
         i) we use only two conv layers and three hidden layers (including the output layer)
@@ -118,3 +118,48 @@ class LeNetContainer(nn.Module):
         x = F.max_pool2d(x, 2, 2)
         #x = F.relu(x)
         return x
+
+# CODE ADDED FOR OUR USE ----------------------------------------------------------------
+
+class InceptionCNNContainerPlant(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        self.init_conv = nn.Conv2d(3, 192, 1)
+        self.layer1_conv1 = nn.Conv2d(192, 128, 1)
+        self.layer1_conv2 = nn.Conv2d(192, 32, 1)
+        self.layer1_pool1 = nn.MaxPool2d(3,stride=1,padding=1)
+        self.layer2_conv1 = nn.Conv2d(192, 64, 1)
+        self.layer2_conv2 = nn.Conv2d(128,128,3,padding=1)
+        self.layer2_conv3 = nn.Conv2d(32,32,5,padding=2)
+        self.layer2_conv4 = nn.Conv2d(192,32,1)
+
+        self.fc1 = nn.Linear(256*256*256, 38)
+        # self.fc2 = nn.Linear(64*64*64, 16*16*16)
+        # self.fc3 = nn.Linear(16*16*16, 38)
+
+    def forward(self, x):
+        # print(x.shape)
+        x = self.init_conv(x)
+        # print(x.shape)
+        l1_o1 = F.relu(self.layer1_conv1(x))
+        l1_o2 = F.relu(self.layer1_conv2(x))
+        # print(self.layer1_pool1(x).shape)
+        l1_o3 = F.relu(self.layer1_pool1(x))
+
+        # print(l1_o3.shape)
+
+        l2_o1 = F.relu(self.layer2_conv1(x))
+        l2_o2 = F.relu(self.layer2_conv2(l1_o1))
+        l2_o3 = F.relu(self.layer2_conv3(l1_o2))
+        l2_o4 = F.relu(self.layer2_conv4(l1_o3))
+
+        o = torch.cat((l2_o1,l2_o2,l2_o3,l2_o4),1)
+
+        # print(o.shape)
+        o = torch.flatten(o,1)
+        o = self.fc1(o)
+        # o = F.relu(self.fc2(o))
+        # o = self.fc3(o)
+
+        return o

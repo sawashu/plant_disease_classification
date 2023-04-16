@@ -1527,6 +1527,7 @@ if __name__ == "__main__":
 
     logger.info("Partitioning data")
 
+    #  COMMENTED OUT PARTITIONING DATA
     if args.partition != "hetero-fbs":
         y_train, net_dataidx_map, traindata_cls_counts = partition_data(args.dataset, args_datadir, args_logdir, 
                                                                 args.partition, args.n_nets, args_alpha, args=args)

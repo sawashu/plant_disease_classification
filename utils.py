@@ -15,6 +15,12 @@ import copy
 import time
 from sklearn.metrics import confusion_matrix
 
+# ADDED IMPORTS ------------------------------------------------
+from pandas.core.common import flatten
+import random 
+import glob
+
+
 # we've changed to a faster solver
 #from scipy.optimize import linear_sum_assignment
 import logging
@@ -23,7 +29,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import torch.nn as nn
 import torch.nn.init as init
-from datasets import MNIST_truncated, CIFAR10_truncated, ImageFolderTruncated, CIFAR10ColorGrayScaleTruncated
+from datasets import MNIST_truncated, CIFAR10_truncated, ImageFolderTruncated, CIFAR10ColorGrayScaleTruncated, PlantDataset
 from combine_nets import prepare_uniform_weights, prepare_sanity_weights, prepare_weight_matrix, normalize_weights, get_weighted_average_pred
 
 from vgg import *
@@ -84,6 +90,37 @@ def partition_data(dataset, datadir, logdir, partition, n_nets, alpha, args):
                                                             transforms.ToTensor(),
                                                             transforms.Normalize(mean=cinic_mean,std=cinic_std),
                                                             ]))
+        y_train = trainset.get_train_labels
+        n_train = y_train.shape[0]
+
+    elif dataset == 'plantifydr':
+
+        data_path = '/data/plantifydr_dataset/color'
+
+        transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+        image_paths = []
+        classes = []
+
+        # print(data_path)
+
+
+        for path in glob.glob(data_path + '/*'):
+            classes.append(path.split('/')[-1])
+            image_paths.append(glob.glob(path + '/*'))
+
+        image_paths = list(flatten(image_paths))
+        random.shuffle(image_paths)
+
+        # print(image_paths)
+
+        train_image_paths,test_image_paths = image_paths[:int(len(image_paths) * 0.8)],image_paths[int(len(image_paths) * 0.8):]
+
+        idx_to_class = {i:j for i,j in enumerate(classes)}
+        class_to_idx = {j:i for i,j in idx_to_class.items()}
+
+        trainset = PlantDataset(train_image_paths,transform,class_to_idx)
+
         y_train = trainset.get_train_labels
         n_train = y_train.shape[0]
 
@@ -924,7 +961,7 @@ def init_models(net_configs, n_nets, args):
         elif args.model == "moderate-cnn":
             if args.dataset == "mnist":
                 cnn = ModerateCNNMNIST()
-            elif args.dataset in ("cifar10", "cinic10"):
+            elif args.dataset in ("cifar10", "cinic10","plantifydr"):
                 cnn = ModerateCNN()
 
         cnns[cnn_i] = cnn
@@ -1042,6 +1079,40 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None):
         test_dl = torch.utils.data.DataLoader(torchvision.datasets.ImageFolder(cinic_directory + '/cinic-10-trainlarge/test',
             transform=transforms.Compose([transforms.ToTensor(),
             transforms.Normalize(mean=cinic_mean,std=cinic_std)])), batch_size=test_bs, shuffle=False)
+
+    elif dataset == 'plantifydr':
+        
+        data_path = os.path.normpath(os.getcwd()) + '/data/plantifydr_dataset/color'
+
+        transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+        image_paths = []
+        classes = []
+
+        # print(data_path)
+
+
+        for path in glob.glob(data_path + '/*'):
+            classes.append(path.split('/')[-1])
+            image_paths.append(glob.glob(path + '/*'))
+
+        image_paths = list(flatten(image_paths))
+        random.shuffle(image_paths)
+
+        # print(image_paths)
+
+        train_image_paths,test_image_paths = image_paths[:int(len(image_paths) * 0.8)],image_paths[int(len(image_paths) * 0.8):]
+
+        idx_to_class = {i:j for i,j in enumerate(classes)}
+        class_to_idx = {j:i for i,j in idx_to_class.items()}
+
+        train_dataset = PlantDataset(train_image_paths,transform,class_to_idx)
+        test_dataset = PlantDataset(test_image_paths,transform,class_to_idx)
+
+        train_dl = torch.utils.data.DataLoader(train_dataset,batch_size=train_bs,shuffle=True)
+        test_dl = torch.utils.data.DataLoader(train_dataset,batch_size=test_bs,shuffle=True)
+
+        print("SUCCESSFULLY GOT DATA LOADED")
 
     return train_dl, test_dl
 

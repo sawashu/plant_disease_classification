@@ -85,10 +85,10 @@ def matching_upd_j(weights_j, global_weights, sigma_inv_j, global_sigmas, prior_
     compute_cost_dur = time.time() - compute_cost_start
     #logger.info("###### Compute cost dur: {}".format(compute_cost_dur))
 
-    #row_ind, col_ind = linear_sum_assignment(-full_cost)
+    row_ind, col_ind = linear_sum_assignment(-full_cost)
     # please note that this can not run on non-Linux systems
     start_time = time.time()
-    row_ind, col_ind = solve_dense(-full_cost)
+    # row_ind, col_ind = solve_dense(-full_cost)
     solve_dur = time.time() - start_time
 
     #logger.info("$$$$$$$$$$$Cost dtype: {}, cost shape: {}, dur: {}".format(full_cost.dtype, full_cost.shape, solve_dur))

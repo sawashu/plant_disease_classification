@@ -11,6 +11,9 @@ import os.path
 import sys
 import logging
 
+# ADDED IMPORTS ----------------------------------------------------------------
+import cv2 
+
 logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -430,6 +433,37 @@ class ImageFolderTruncated(DatasetFolder):
         if self.target_transform is not None:
             target = self.target_transform(target)
         return sample, target
+
+    @property
+    def get_train_labels(self):
+        return self._train_labels
+
+# CODE ADDED --------------------------------
+
+class PlantDataset(data.Dataset):
+    def __init__(self, image_paths, transform=False, class_to_index=None):
+        self.image_paths = image_paths
+        self.transform = transform
+        self.class_to_index = class_to_index
+
+        self._train_labels = np.array([self.class_to_index[img_path.split('/')[-2]] for img_path in self.image_paths])
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, index):
+        
+        image_filepath = self.image_paths[index]
+        image = cv2.imread(image_filepath)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        label = image_filepath.split('/')[-2]
+        label = self.class_to_index[label]
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        return image, label
 
     @property
     def get_train_labels(self):

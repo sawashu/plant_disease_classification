@@ -318,6 +318,7 @@ class ModerateCNN(nn.Module):
         self.fc_layer = nn.Sequential(
             nn.Dropout(p=0.1),
             #nn.Linear(4096, 1024),
+            nn.Linear(262144,4096),
             nn.Linear(4096, 512),
             nn.ReLU(inplace=True),
             #nn.Linear(1024, 512),
@@ -328,6 +329,7 @@ class ModerateCNN(nn.Module):
         )
 
     def forward(self, x):
+        # print(x.shape)
         x = self.conv_layer(x)
         x = x.view(x.size(0), -1)
         x = self.fc_layer(x)
