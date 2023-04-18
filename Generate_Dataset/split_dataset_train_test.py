@@ -3,7 +3,9 @@ This code is the code that genearted the train, validation, and testing data fol
 from the dataset 'plant_doc_and_plant_village_images'
 
 It DOES NOT need to be run again, you can just use the different datasets stored in 
-the train_val_test_split. Note there is a set seed, so you can run it again and get the 
+the train_val_test_split. 
+
+Note there is a set seed, so you can run it again and get the 
 same test, train, val folders.
 '''
 
