@@ -90,12 +90,14 @@ class MyCNN(nn.Module):
                 if j >10:
                     break
                 else:
+
+                    optimizer.zero_grad()
+
                     # Forward pass
                     out = self(images)
                     loss = criterion(out, labels)
 
                     # Backward pass and optimize 
-                    optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
 
@@ -122,7 +124,7 @@ class MyCNN(nn.Module):
 
     def predict(self, test_loader, criterion):
 
-        # five = 0
+        five = True
         # wrong_images_len = 0
         # wrong_images = []
         # wrong_labels = []
@@ -140,6 +142,24 @@ class MyCNN(nn.Module):
                     # Compute prediction output and loss
                     out = self(images)
                     loss = criterion(out, labels)
+
+                    if five:
+                        five_images = images[:5]
+                        five_out = out[:5]
+                        five_labels = labels[:5]
+                        five = False
+
+                        # plot five images from generator
+                        num_row = 1 
+                        num_col = 5 
+                        fig, axes = plt.subplots(num_row, num_col, figsize=(1.5*num_col,2*num_row))
+                        for im in range(len(five_images)):
+                            ax = axes[im%num_col]
+                            ax.imshow(five_images[im].detach().numpy().reshape(28,28), cmap='gray')
+
+                            plt.savefig(f'five_images.png', bbox_inches='tight')
+                            plt.close()
+
 
                     # Measure loss and error rate and record
                     total_loss += loss.item()
