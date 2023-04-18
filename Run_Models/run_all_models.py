@@ -1,6 +1,4 @@
-################################
-# DO NOT EDIT THE FOLLOWING CODE
-################################
+
 import numpy as np
 
 import torch
@@ -20,39 +18,32 @@ batch_size = 32
 # load MNIST dataset
 train_dataset, val_dataset, test_dataset, train_loader, valid_loader, test_loader = load_data(batch_size)
 
-#####################
-# ADD YOUR CODE BELOW
-#####################
-
-## Testing: small batch:
-# print(f'train d = {train_dataset.__sizeof__}, train l = {len(train_loader)}')
-# train_dataset = train_dataset[:50, :]
-# val_dataset = val_dataset[:50, :]
-# test_dataset = test_dataset[:50, :]
-
-# train_loader = train_loader[:10]
-# valid_loader = valid_loader[:10]
-# test_loader = test_loader[:10]
-
+#########################################################################################################
+# Run Basic CNN
+#########################################################################################################
 # Max Epochs
-N = 3
+N = 1
 
 # initialize MLP class
-model = MyCNN(max_epochs = N)
+simple_cnn_model = MyCNN(max_epochs = N)
 
 # initialize optimizer
-optimizer = torch.optim.SGD(model.parameters(), lr = 0.01)
+optimizer = torch.optim.SGD(simple_cnn_model.parameters(), lr = 0.01)
 
 # print training loss, error rate for each epoch
 print(f'CNN model with SGD, learning rate 0.1:')
 print('* * * * * TRAINING * * * * *')
 
 # fit model with training data
-model.fit(train_loader = train_loader, criterion = nn.CrossEntropyLoss(), optimizer = optimizer)
+cnn_t_loss, cnn_t_error_rate = simple_cnn_model.fit(train_loader = train_loader, criterion = nn.CrossEntropyLoss(), optimizer = optimizer)
 
 # test model with test data
-test_loss, test_error = model.predict(test_loader = test_loader, criterion = nn.CrossEntropyLoss())
+test_loss, test_error = simple_cnn_model.predict(test_loader = test_loader, criterion = nn.CrossEntropyLoss())
 
 print('* * * * * TESTING * * * * *')
 print(f'Loss = {test_loss}  error rate = {test_error}')
 print(' ')
+
+#########################################################################################################
+#Run FedMA with CNN
+#########################################################################################################

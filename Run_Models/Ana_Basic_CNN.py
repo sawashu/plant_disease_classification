@@ -77,7 +77,8 @@ class MyCNN(nn.Module):
         return o
     
     def fit(self, train_loader, criterion, optimizer):
-
+        loss_list = []
+        error_rate_list = []
         prev_loss = 0
         # Epoch loop
         for i in range(self.max_epochs):
@@ -86,7 +87,9 @@ class MyCNN(nn.Module):
             # Mini batch loop
             for j,(images,labels) in enumerate(train_loader):
 
-                if j < 10:
+                if j >10:
+                    break
+                else:
                     # Forward pass
                     out = self(images)
                     loss = criterion(out, labels)
@@ -105,28 +108,34 @@ class MyCNN(nn.Module):
             error_rate = 1 - (num_correct / num_samples)
 
             # Print/return training loss and error rate in each epoch
-            print(f'Epoch {i}: loss = {total_loss}     error rate = {error_rate}')
+            # print(f'Epoch {i}: loss = {total_loss}     error rate = {error_rate}')
+            loss_list.append(total_loss)
+            error_rate_list.append(error_rate)
 
             # check if training has converged
             if prev_loss == 0:
                 prev_loss = total_loss
             elif np.abs(prev_loss - total_loss)/num_samples < 0.001:
                 break
+        
+        return(loss_list, error_rate_list)
 
     def predict(self, test_loader, criterion):
 
-        five = 0
-        wrong_images_len = 0
-        wrong_images = []
-        wrong_labels = []
-        correct_labels = []
+        # five = 0
+        # wrong_images_len = 0
+        # wrong_images = []
+        # wrong_labels = []
+        # correct_labels = []
 
         total_loss, num_correct, num_samples = 0.0, 0, 0
 
         with torch.no_grad(): # no backprop step so turn off gradients
             for j,(images,labels) in enumerate(test_loader):
 
-                if j < 10:
+                if j > 10 :
+                    break
+                else:
 
                     # Compute prediction output and loss
                     out = self(images)
@@ -139,31 +148,31 @@ class MyCNN(nn.Module):
                     num_samples += len(labels)
 
                     # save index of incorrectly labeled images
-                    if five <= 5:
-                        for i, out_label, true_label in zip(range(len(labels)), out.argmax(-1), labels):
-                            if out_label != true_label:
-                                wrong_images.append(images[i].numpy())
-                                wrong_labels.append(out_label)
-                                correct_labels.append(true_label)
-                                wrong_images_len += 1
-                                five += 1
+                    # if five <= 5:
+                    #     for i, out_label, true_label in zip(range(len(labels)), out.argmax(-1), labels):
+                    #         if out_label != true_label:
+                    #             wrong_images.append(images[i].numpy())
+                    #             wrong_labels.append(out_label)
+                    #             correct_labels.append(true_label)
+                    #             wrong_images_len += 1
+                    #             five += 1
 
             # plot 5 random images incorrectly predicted
             # give correct label and label MyCNN predicted
 
-            fig, ax = plt.subplots(1, 5, figsize = (8, 12))
+            # fig, ax = plt.subplots(1, 5, figsize = (8, 12))
 
-            for i in range(5):
-                img  = wrong_images[i]
-                w_lab = wrong_labels[i]
-                t_lab = correct_labels[i]
-                ax[i].set_title(f'True Label: {t_lab}')
-                ax[i].set_xlabel(f'MyCNN Label: {w_lab}')
-                ax[i].imshow(img.squeeze())
+            # for i in range(5):
+            #     img  = wrong_images[i]
+            #     w_lab = wrong_labels[i]
+            #     t_lab = correct_labels[i]
+            #     ax[i].set_title(f'True Label: {t_lab}')
+            #     ax[i].set_xlabel(f'MyCNN Label: {w_lab}')
+            #     ax[i].imshow(img)
 
-            fig.savefig('Five_Incorrect_Images.png')   # save the figure to file
-            plt.close(fig)    # close the figure window
-            fig.show
+            # fig.savefig('Five_Incorrect_Images.png')   # save the figure to file
+            # plt.close(fig)    # close the figure window
+            # fig.show
             
             err_rate = 1 - (num_correct / num_samples)
 
