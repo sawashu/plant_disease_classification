@@ -12,8 +12,8 @@ def compute_model_averaging_accuracy(models, weights, train_dl, test_dl, n_class
     elif args.model == "vgg":
         avg_cnn = vgg11()
     elif args.model == "simple-cnn":
-        if args.dataset in ("cifar10", "cinic10"):
-            avg_cnn = SimpleCNN(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], output_dim=10)
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
+            avg_cnn = SimpleCNN(input_dim=(16 * 61 * 61), hidden_dims=[120, 84], output_dim=38)
         elif args.dataset == "mnist":
             avg_cnn = SimpleCNNMNIST(input_dim=(16 * 4 * 4), hidden_dims=[120, 84], output_dim=10)
     elif args.model == "moderate-cnn":
@@ -230,7 +230,7 @@ def compute_full_cnn_accuracy(models, weights, train_dl, test_dl, n_classes, dev
     elif args.model == "simple-cnn":
         # input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
         # [(9, 75), (9,), (19, 225), (19,), (475, 123), (123,), (123, 87), (87,), (87, 10), (10,)]
-        if args.dataset in ("cifar10", "cinic10"):
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
             input_channel = 3
         elif args.dataset == "mnist":
             input_channel = 1
@@ -240,9 +240,10 @@ def compute_full_cnn_accuracy(models, weights, train_dl, test_dl, n_classes, dev
         matched_cnn = SimpleCNNContainer(input_channel=input_channel, 
                                         num_filters=num_filters, 
                                         kernel_size=5, 
-                                        input_dim=input_dim, 
+                                        input_dim=input_dim,
+                                        # input_dim=16*61*61,  
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
         #(260, 1188), (260,), (260, 2340), (260,), 

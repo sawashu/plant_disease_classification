@@ -18,7 +18,7 @@ args_logdir = "logs/cifar10"
 #args_dataset = "cifar10"
 args_datadir = "./data/cifar10"
 args_init_seed = 0
-args_net_config = [3072, 100, 10]
+args_net_config = [3072, 100, 38]
 #args_partition = "hetero-dir"
 args_partition = "homo"
 args_experiment = ["u-ensemble", "pdm"]
@@ -102,11 +102,13 @@ def train_net(net_id, net, train_dataloader, test_dataloader, epochs, lr, args, 
     logger.info('>> Pre-Training Training accuracy: {}'.format(train_acc))
     logger.info('>> Pre-Training Test accuracy: {}'.format(test_acc))
 
-    if args.dataset == "cinic10":
-        optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=0.0001)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
-    else:
-        optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+    # if args.dataset == "cinic10":
+    #     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=0.0001)
+    #     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+    # else:
+    #     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+
+    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
     
     criterion = nn.CrossEntropyLoss().to(device)
 
@@ -124,6 +126,8 @@ def train_net(net_id, net, train_dataloader, test_dataloader, epochs, lr, args, 
             target = target.long()
 
             out = net(x)
+            # print(f"{out.shape=}")
+            # print(f"{target.shape=}")
             loss = criterion(out, target)
 
             loss.backward()
@@ -136,8 +140,8 @@ def train_net(net_id, net, train_dataloader, test_dataloader, epochs, lr, args, 
         epoch_loss = sum(epoch_loss_collector) / len(epoch_loss_collector)
         logger.info('Epoch: %d Loss: %f' % (epoch, epoch_loss))
 
-        if args.dataset == "cinic10":
-            scheduler.step()
+        # if args.dataset == "cinic10":
+        #     scheduler.step()
 
     train_acc = compute_accuracy(net, train_dataloader, device=device)
     test_acc, conf_matrix = compute_accuracy(net, test_dataloader, get_confusion_matrix=True, device=device)
@@ -178,27 +182,27 @@ def local_retrain_dummy(local_datasets, weights, args, mode="bottom-up", freezin
     """
     FOR FPNM
     """
-    if args.model == "lenet":
-        num_filters = [weights[0].shape[0], weights[2].shape[0]]
-        kernel_size = 5
-        input_dim = weights[4].shape[0]
-        hidden_dims = [weights[4].shape[1]]
-        output_dim = weights[-1].shape[0]
-        logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
+    # if args.model == "lenet":
+    #     num_filters = [weights[0].shape[0], weights[2].shape[0]]
+    #     kernel_size = 5
+    #     input_dim = weights[4].shape[0]
+    #     hidden_dims = [weights[4].shape[1]]
+    #     output_dim = weights[-1].shape[0]
+    #     logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
 
-        matched_cnn = LeNetContainer(
-                                    num_filters=num_filters,
-                                    kernel_size=kernel_size,
-                                    input_dim=input_dim,
-                                    hidden_dims=hidden_dims,
-                                    output_dim=output_dim)
-    elif args.model == "vgg":
-        matched_shapes = [w.shape for w in weights]
-        matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
-    elif args.model == "simple-cnn":
+    #     matched_cnn = LeNetContainer(
+    #                                 num_filters=num_filters,
+    #                                 kernel_size=kernel_size,
+    #                                 input_dim=input_dim,
+    #                                 hidden_dims=hidden_dims,
+    #                                 output_dim=output_dim)
+    # elif args.model == "vgg":
+    #     matched_shapes = [w.shape for w in weights]
+    #     matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
+    if args.model == "simple-cnn":
         # input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
         # [(9, 75), (9,), (19, 225), (19,), (475, 123), (123,), (123, 87), (87,), (87, 10), (10,)]
-        if args.dataset in ("cifar10", "cinic10"):
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
             input_channel = 3
         elif args.dataset == "mnist":
             input_channel = 1
@@ -209,105 +213,106 @@ def local_retrain_dummy(local_datasets, weights, args, mode="bottom-up", freezin
         matched_cnn = SimpleCNNContainer(input_channel=input_channel, 
                                         num_filters=num_filters, 
                                         kernel_size=5, 
-                                        input_dim=input_dim, 
+                                        input_dim=input_dim,
+                                        # input_dim=16*61*61,  
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
-    elif args.model == "moderate-cnn":
-        #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
-        #(260, 1188), (260,), (260, 2340), (260,), 
-        #(4160, 1025), (1025,), (1025, 515), (515,), (515, 10), (10,)]
-        if mode not in ("block-wise", "squeezing"):
-            num_filters = [weights[0].shape[0], weights[2].shape[0], weights[4].shape[0], weights[6].shape[0], weights[8].shape[0], weights[10].shape[0]]
-            input_dim = weights[12].shape[0]
-            hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
+                                        output_dim=38)
+    # elif args.model == "moderate-cnn":
+    #     #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
+    #     #(260, 1188), (260,), (260, 2340), (260,), 
+    #     #(4160, 1025), (1025,), (1025, 515), (515,), (515, 10), (10,)]
+    #     if mode not in ("block-wise", "squeezing"):
+    #         num_filters = [weights[0].shape[0], weights[2].shape[0], weights[4].shape[0], weights[6].shape[0], weights[8].shape[0], weights[10].shape[0]]
+    #         input_dim = weights[12].shape[0]
+    #         hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
 
-            input_dim = weights[12].shape[0]
-        elif mode == "block-wise":
-            # for block-wise retraining the `freezing_index` becomes a range of indices
-            # so at here we need to generate a unfreezing list:
-            __unfreezing_list = []
-            for fi in freezing_index:
-                __unfreezing_list.append(2*fi-2)
-                __unfreezing_list.append(2*fi-1)
+    #         input_dim = weights[12].shape[0]
+    #     elif mode == "block-wise":
+    #         # for block-wise retraining the `freezing_index` becomes a range of indices
+    #         # so at here we need to generate a unfreezing list:
+    #         __unfreezing_list = []
+    #         for fi in freezing_index:
+    #             __unfreezing_list.append(2*fi-2)
+    #             __unfreezing_list.append(2*fi-1)
 
-            # we need to do two changes here:
-            # i) switch the number of filters in the freezing indices block to the original size
-            # ii) cut the correspoidng color channels
-            __fixed_indices = set([i*2 for i in range(6)]) # 0, 2, 4, 6, 8, 10
-            dummy_model = ModerateCNN()
+    #         # we need to do two changes here:
+    #         # i) switch the number of filters in the freezing indices block to the original size
+    #         # ii) cut the correspoidng color channels
+    #         __fixed_indices = set([i*2 for i in range(6)]) # 0, 2, 4, 6, 8, 10
+    #         dummy_model = ModerateCNN()
 
-            num_filters = []
-            for pi, param in enumerate(dummy_model.parameters()):
-                if pi in __fixed_indices:
-                    if pi in __unfreezing_list:
-                        num_filters.append(param.size()[0])
-                    else:
-                        num_filters.append(weights[pi].shape[0])
-            del dummy_model
-            logger.info("################ Num filters for now are : {}".format(num_filters))
-            # note that we hard coded index of the last conv layer here to make sure the dimension is compatible
-            if freezing_index[0] != 6:
-            #if freezing_index[0] not in (6, 7):
-                input_dim = weights[12].shape[0]
-            else:
-                # we need to estimate the output shape here:
-                shape_estimator = ModerateCNNContainerConvBlocks(num_filters=num_filters)
-                dummy_input = torch.rand(1, 3, 32, 32)
-                estimated_output = shape_estimator(dummy_input)
-                #estimated_shape = (estimated_output[1], estimated_output[2], estimated_output[3])
-                input_dim = estimated_output.view(-1).size()[0]
+    #         num_filters = []
+    #         for pi, param in enumerate(dummy_model.parameters()):
+    #             if pi in __fixed_indices:
+    #                 if pi in __unfreezing_list:
+    #                     num_filters.append(param.size()[0])
+    #                 else:
+    #                     num_filters.append(weights[pi].shape[0])
+    #         del dummy_model
+    #         logger.info("################ Num filters for now are : {}".format(num_filters))
+    #         # note that we hard coded index of the last conv layer here to make sure the dimension is compatible
+    #         if freezing_index[0] != 6:
+    #         #if freezing_index[0] not in (6, 7):
+    #             input_dim = weights[12].shape[0]
+    #         else:
+    #             # we need to estimate the output shape here:
+    #             shape_estimator = ModerateCNNContainerConvBlocks(num_filters=num_filters)
+    #             dummy_input = torch.rand(1, 3, 32, 32)
+    #             estimated_output = shape_estimator(dummy_input)
+    #             #estimated_shape = (estimated_output[1], estimated_output[2], estimated_output[3])
+    #             input_dim = estimated_output.view(-1).size()[0]
 
-            if (freezing_index[0] <= 6) or (freezing_index[0] > 8):
-                hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
-            else:
-                dummy_model = ModerateCNN()
-                for pi, param in enumerate(dummy_model.parameters()):
-                    if pi == 2*freezing_index[0] - 2:
-                        _desired_shape = param.size()[0]
-                if freezing_index[0] == 7:
-                    hidden_dims = [_desired_shape, weights[14].shape[1]]
-                elif freezing_index[0] == 8:
-                    hidden_dims = [weights[12].shape[1], _desired_shape]
-        elif mode == "squeezing":
-            pass
+    #         if (freezing_index[0] <= 6) or (freezing_index[0] > 8):
+    #             hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
+    #         else:
+    #             dummy_model = ModerateCNN()
+    #             for pi, param in enumerate(dummy_model.parameters()):
+    #                 if pi == 2*freezing_index[0] - 2:
+    #                     _desired_shape = param.size()[0]
+    #             if freezing_index[0] == 7:
+    #                 hidden_dims = [_desired_shape, weights[14].shape[1]]
+    #             elif freezing_index[0] == 8:
+    #                 hidden_dims = [weights[12].shape[1], _desired_shape]
+    #     elif mode == "squeezing":
+    #         pass
 
 
-        if args.dataset in ("cifar10", "cinic10"):
-            if mode == "squeezing":
-                matched_cnn = ModerateCNN()
-            else:
-                matched_cnn = ModerateCNNContainer(3,
-                                                    num_filters, 
-                                                    kernel_size=3, 
-                                                    input_dim=input_dim, 
-                                                    hidden_dims=hidden_dims, 
-                                                    output_dim=10)
-        elif args.dataset == "mnist":
-            matched_cnn = ModerateCNNContainer(1,
-                                                num_filters, 
-                                                kernel_size=3, 
-                                                input_dim=input_dim, 
-                                                hidden_dims=hidden_dims, 
-                                                output_dim=10)
+    #     if args.dataset in ("cifar10", "cinic10"):
+    #         if mode == "squeezing":
+    #             matched_cnn = ModerateCNN()
+    #         else:
+    #             matched_cnn = ModerateCNNContainer(3,
+    #                                                 num_filters, 
+    #                                                 kernel_size=3, 
+    #                                                 input_dim=input_dim, 
+    #                                                 hidden_dims=hidden_dims, 
+    #                                                 output_dim=10)
+    #     elif args.dataset == "mnist":
+    #         matched_cnn = ModerateCNNContainer(1,
+    #                                             num_filters, 
+    #                                             kernel_size=3, 
+    #                                             input_dim=input_dim, 
+    #                                             hidden_dims=hidden_dims, 
+    #                                             output_dim=10)
     
     new_state_dict = {}
     model_counter = 0
     n_layers = int(len(weights) / 2)
 
-    # we hardcoded this for now: will probably make changes later
-    #if mode != "block-wise":
+    # # we hardcoded this for now: will probably make changes later
+    # #if mode != "block-wise":
     if mode not in ("block-wise", "squeezing"):
         __non_loading_indices = []
-    else:
-        if mode == "block-wise":
-            if freezing_index[0] != n_layers:
-                __non_loading_indices = copy.deepcopy(__unfreezing_list)
-                __non_loading_indices.append(__unfreezing_list[-1]+1) # add the index of the weight connects to the next layer
-            else:
-                __non_loading_indices = copy.deepcopy(__unfreezing_list)
-        elif mode == "squeezing":
-            # please note that at here we need to reconstruct the entire local network and retrain it
-            __non_loading_indices = [i for i in range(len(weights))]
+    # else:
+    #     if mode == "block-wise":
+    #         if freezing_index[0] != n_layers:
+    #             __non_loading_indices = copy.deepcopy(__unfreezing_list)
+    #             __non_loading_indices.append(__unfreezing_list[-1]+1) # add the index of the weight connects to the next layer
+    #         else:
+    #             __non_loading_indices = copy.deepcopy(__unfreezing_list)
+    #     elif mode == "squeezing":
+    #         # please note that at here we need to reconstruct the entire local network and retrain it
+    #         __non_loading_indices = [i for i in range(len(weights))]
 
     def __reconstruct_weights(weight, assignment, layer_ori_shape, matched_num_filters=None, weight_type="conv_weight", slice_dim="filter"):
         # what contains in the param `assignment` is the assignment for a certain layer, a certain worker
@@ -344,7 +349,7 @@ def local_retrain_dummy(local_datasets, weights, args, mode="bottom-up", freezin
     for param_idx, (key_name, param) in enumerate(matched_cnn.state_dict().items()):
         if (param_idx in __non_loading_indices) and (freezing_index[0] != n_layers):
             # we need to reconstruct the weights here s.t.
-            # i) shapes of the weights are euqal to the shapes of the weight in original model (before matching)
+            # i) shapes of the weights are equal to the shapes of the weight in original model (before matching)
             # ii) each neuron comes from the corresponding global neuron
             _matched_weight = weights[param_idx]
             _matched_num_filters = weights[__non_loading_indices[0]].shape[0]
@@ -409,27 +414,27 @@ def local_retrain(local_datasets, weights, args, mode="bottom-up", freezing_inde
                       i.e. freezing_index = 0 means we train the whole network normally
                            freezing_index = len(model) means we freez the entire network
     """
-    if args.model == "lenet":
-        num_filters = [weights[0].shape[0], weights[2].shape[0]]
-        kernel_size = 5
-        input_dim = weights[4].shape[0]
-        hidden_dims = [weights[4].shape[1]]
-        output_dim = weights[-1].shape[0]
-        logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
+    # if args.model == "lenet":
+    #     num_filters = [weights[0].shape[0], weights[2].shape[0]]
+    #     kernel_size = 5
+    #     input_dim = weights[4].shape[0]
+    #     hidden_dims = [weights[4].shape[1]]
+    #     output_dim = weights[-1].shape[0]
+    #     logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
 
-        matched_cnn = LeNetContainer(
-                                    num_filters=num_filters,
-                                    kernel_size=kernel_size,
-                                    input_dim=input_dim,
-                                    hidden_dims=hidden_dims,
-                                    output_dim=output_dim)
-    elif args.model == "vgg":
-        matched_shapes = [w.shape for w in weights]
-        matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
-    elif args.model == "simple-cnn":
+    #     matched_cnn = LeNetContainer(
+    #                                 num_filters=num_filters,
+    #                                 kernel_size=kernel_size,
+    #                                 input_dim=input_dim,
+    #                                 hidden_dims=hidden_dims,
+    #                                 output_dim=output_dim)
+    # elif args.model == "vgg":
+    #     matched_shapes = [w.shape for w in weights]
+    #     matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
+    if args.model == "simple-cnn":
         # input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
         # [(9, 75), (9,), (19, 225), (19,), (475, 123), (123,), (123, 87), (87,), (87, 10), (10,)]
-        if args.dataset in ("cifar10", "cinic10"):
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
             input_channel = 3
         elif args.dataset == "mnist":
             input_channel = 1
@@ -440,86 +445,87 @@ def local_retrain(local_datasets, weights, args, mode="bottom-up", freezing_inde
         matched_cnn = SimpleCNNContainer(input_channel=input_channel, 
                                         num_filters=num_filters, 
                                         kernel_size=5, 
-                                        input_dim=input_dim, 
+                                        input_dim=input_dim,
+                                        # input_dim=16*61*61,  
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
-    elif args.model == "moderate-cnn":
-        #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
-        #(260, 1188), (260,), (260, 2340), (260,), 
-        #(4160, 1025), (1025,), (1025, 515), (515,), (515, 10), (10,)]
-        if mode not in ("block-wise", "squeezing"):
-            num_filters = [weights[0].shape[0], weights[2].shape[0], weights[4].shape[0], weights[6].shape[0], weights[8].shape[0], weights[10].shape[0]]
-            input_dim = weights[12].shape[0]
-            hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
+                                        output_dim=38)
+    # elif args.model == "moderate-cnn":
+    #     #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
+    #     #(260, 1188), (260,), (260, 2340), (260,), 
+    #     #(4160, 1025), (1025,), (1025, 515), (515,), (515, 10), (10,)]
+    #     if mode not in ("block-wise", "squeezing"):
+    #         num_filters = [weights[0].shape[0], weights[2].shape[0], weights[4].shape[0], weights[6].shape[0], weights[8].shape[0], weights[10].shape[0]]
+    #         input_dim = weights[12].shape[0]
+    #         hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
 
-            input_dim = weights[12].shape[0]
-        elif mode == "block-wise":
-            # for block-wise retraining the `freezing_index` becomes a range of indices
-            # so at here we need to generate a unfreezing list:
-            __unfreezing_list = []
-            for fi in freezing_index:
-                __unfreezing_list.append(2*fi-2)
-                __unfreezing_list.append(2*fi-1)
+    #         input_dim = weights[12].shape[0]
+    #     elif mode == "block-wise":
+    #         # for block-wise retraining the `freezing_index` becomes a range of indices
+    #         # so at here we need to generate a unfreezing list:
+    #         __unfreezing_list = []
+    #         for fi in freezing_index:
+    #             __unfreezing_list.append(2*fi-2)
+    #             __unfreezing_list.append(2*fi-1)
 
-            # we need to do two changes here:
-            # i) switch the number of filters in the freezing indices block to the original size
-            # ii) cut the correspoidng color channels
-            __fixed_indices = set([i*2 for i in range(6)]) # 0, 2, 4, 6, 8, 10
-            dummy_model = ModerateCNN()
+    #         # we need to do two changes here:
+    #         # i) switch the number of filters in the freezing indices block to the original size
+    #         # ii) cut the correspoidng color channels
+    #         __fixed_indices = set([i*2 for i in range(6)]) # 0, 2, 4, 6, 8, 10
+    #         dummy_model = ModerateCNN()
 
-            num_filters = []
-            for pi, param in enumerate(dummy_model.parameters()):
-                if pi in __fixed_indices:
-                    if pi in __unfreezing_list:
-                        num_filters.append(param.size()[0])
-                    else:
-                        num_filters.append(weights[pi].shape[0])
-            del dummy_model
-            logger.info("################ Num filters for now are : {}".format(num_filters))
-            # note that we hard coded index of the last conv layer here to make sure the dimension is compatible
-            if freezing_index[0] != 6:
-            #if freezing_index[0] not in (6, 7):
-                input_dim = weights[12].shape[0]
-            else:
-                # we need to estimate the output shape here:
-                shape_estimator = ModerateCNNContainerConvBlocks(num_filters=num_filters)
-                dummy_input = torch.rand(1, 3, 32, 32)
-                estimated_output = shape_estimator(dummy_input)
-                #estimated_shape = (estimated_output[1], estimated_output[2], estimated_output[3])
-                input_dim = estimated_output.view(-1).size()[0]
+    #         num_filters = []
+    #         for pi, param in enumerate(dummy_model.parameters()):
+    #             if pi in __fixed_indices:
+    #                 if pi in __unfreezing_list:
+    #                     num_filters.append(param.size()[0])
+    #                 else:
+    #                     num_filters.append(weights[pi].shape[0])
+    #         del dummy_model
+    #         logger.info("################ Num filters for now are : {}".format(num_filters))
+    #         # note that we hard coded index of the last conv layer here to make sure the dimension is compatible
+    #         if freezing_index[0] != 6:
+    #         #if freezing_index[0] not in (6, 7):
+    #             input_dim = weights[12].shape[0]
+    #         else:
+    #             # we need to estimate the output shape here:
+    #             shape_estimator = ModerateCNNContainerConvBlocks(num_filters=num_filters)
+    #             dummy_input = torch.rand(1, 3, 32, 32)
+    #             estimated_output = shape_estimator(dummy_input)
+    #             #estimated_shape = (estimated_output[1], estimated_output[2], estimated_output[3])
+    #             input_dim = estimated_output.view(-1).size()[0]
 
-            if (freezing_index[0] <= 6) or (freezing_index[0] > 8):
-                hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
-            else:
-                dummy_model = ModerateCNN()
-                for pi, param in enumerate(dummy_model.parameters()):
-                    if pi == 2*freezing_index[0] - 2:
-                        _desired_shape = param.size()[0]
-                if freezing_index[0] == 7:
-                    hidden_dims = [_desired_shape, weights[14].shape[1]]
-                elif freezing_index[0] == 8:
-                    hidden_dims = [weights[12].shape[1], _desired_shape]
-        elif mode == "squeezing":
-            pass
+    #         if (freezing_index[0] <= 6) or (freezing_index[0] > 8):
+    #             hidden_dims = [weights[12].shape[1], weights[14].shape[1]]
+    #         else:
+    #             dummy_model = ModerateCNN()
+    #             for pi, param in enumerate(dummy_model.parameters()):
+    #                 if pi == 2*freezing_index[0] - 2:
+    #                     _desired_shape = param.size()[0]
+    #             if freezing_index[0] == 7:
+    #                 hidden_dims = [_desired_shape, weights[14].shape[1]]
+    #             elif freezing_index[0] == 8:
+    #                 hidden_dims = [weights[12].shape[1], _desired_shape]
+    #     elif mode == "squeezing":
+    #         pass
 
 
-        if args.dataset in ("cifar10", "cinic10"):
-            if mode == "squeezing":
-                matched_cnn = ModerateCNN()
-            else:
-                matched_cnn = ModerateCNNContainer(3,
-                                                    num_filters, 
-                                                    kernel_size=3, 
-                                                    input_dim=input_dim, 
-                                                    hidden_dims=hidden_dims, 
-                                                    output_dim=10)
-        elif args.dataset == "mnist":
-            matched_cnn = ModerateCNNContainer(1,
-                                                num_filters, 
-                                                kernel_size=3, 
-                                                input_dim=input_dim, 
-                                                hidden_dims=hidden_dims, 
-                                                output_dim=10)
+    #     if args.dataset in ("cifar10", "cinic10"):
+    #         if mode == "squeezing":
+    #             matched_cnn = ModerateCNN()
+    #         else:
+    #             matched_cnn = ModerateCNNContainer(3,
+    #                                                 num_filters, 
+    #                                                 kernel_size=3, 
+    #                                                 input_dim=input_dim, 
+    #                                                 hidden_dims=hidden_dims, 
+    #                                                 output_dim=10)
+    #     elif args.dataset == "mnist":
+    #         matched_cnn = ModerateCNNContainer(1,
+    #                                             num_filters, 
+    #                                             kernel_size=3, 
+    #                                             input_dim=input_dim, 
+    #                                             hidden_dims=hidden_dims, 
+    #                                             output_dim=10)
     
     new_state_dict = {}
     model_counter = 0
@@ -529,16 +535,16 @@ def local_retrain(local_datasets, weights, args, mode="bottom-up", freezing_inde
     #if mode != "block-wise":
     if mode not in ("block-wise", "squeezing"):
         __non_loading_indices = []
-    else:
-        if mode == "block-wise":
-            if freezing_index[0] != n_layers:
-                __non_loading_indices = copy.deepcopy(__unfreezing_list)
-                __non_loading_indices.append(__unfreezing_list[-1]+1) # add the index of the weight connects to the next layer
-            else:
-                __non_loading_indices = copy.deepcopy(__unfreezing_list)
-        elif mode == "squeezing":
-            # please note that at here we need to reconstruct the entire local network and retrain it
-            __non_loading_indices = [i for i in range(len(weights))]
+    # else:
+    #     if mode == "block-wise":
+    #         if freezing_index[0] != n_layers:
+    #             __non_loading_indices = copy.deepcopy(__unfreezing_list)
+    #             __non_loading_indices.append(__unfreezing_list[-1]+1) # add the index of the weight connects to the next layer
+    #         else:
+    #             __non_loading_indices = copy.deepcopy(__unfreezing_list)
+    #     elif mode == "squeezing":
+    #         # please note that at here we need to reconstruct the entire local network and retrain it
+    #         __non_loading_indices = [i for i in range(len(weights))]
 
     def __reconstruct_weights(weight, assignment, layer_ori_shape, matched_num_filters=None, weight_type="conv_weight", slice_dim="filter"):
         # what contains in the param `assignment` is the assignment for a certain layer, a certain worker
@@ -714,27 +720,27 @@ def local_retrain_fedavg(local_datasets, weights, args, device="cpu"):
                       i.e. freezing_index = 0 means we train the whole network normally
                            freezing_index = len(model) means we freez the entire network
     """
-    if args.model == "lenet":
-        num_filters = [weights[0].shape[0], weights[2].shape[0]]
-        kernel_size = 5
-        input_dim = weights[4].shape[0]
-        hidden_dims = [weights[4].shape[1]]
-        output_dim = weights[-1].shape[0]
-        logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
+    # if args.model == "lenet":
+    #     num_filters = [weights[0].shape[0], weights[2].shape[0]]
+    #     kernel_size = 5
+    #     input_dim = weights[4].shape[0]
+    #     hidden_dims = [weights[4].shape[1]]
+    #     output_dim = weights[-1].shape[0]
+    #     logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
 
-        matched_cnn = LeNetContainer(
-                                    num_filters=num_filters,
-                                    kernel_size=kernel_size,
-                                    input_dim=input_dim,
-                                    hidden_dims=hidden_dims,
-                                    output_dim=output_dim)
-    elif args.model == "vgg":
-        matched_shapes = [w.shape for w in weights]
-        matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
-    elif args.model == "simple-cnn":
+    #     matched_cnn = LeNetContainer(
+    #                                 num_filters=num_filters,
+    #                                 kernel_size=kernel_size,
+    #                                 input_dim=input_dim,
+    #                                 hidden_dims=hidden_dims,
+    #                                 output_dim=output_dim)
+    # elif args.model == "vgg":
+    #     matched_shapes = [w.shape for w in weights]
+    #     matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
+    if args.model == "simple-cnn":
         # input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
         # [(9, 75), (9,), (19, 225), (19,), (475, 123), (123,), (123, 87), (87,), (87, 10), (10,)]
-        if args.dataset in ("cifar10", "cinic10"):
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
             input_channel = 3
         elif args.dataset == "mnist":
             input_channel = 1
@@ -745,9 +751,10 @@ def local_retrain_fedavg(local_datasets, weights, args, device="cpu"):
         matched_cnn = SimpleCNNContainer(input_channel=input_channel, 
                                         num_filters=num_filters, 
                                         kernel_size=5, 
-                                        input_dim=input_dim, 
+                                        input_dim=input_dim,
+                                        # input_dim=16*61*61,  
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         matched_cnn = ModerateCNN()
 
@@ -823,27 +830,27 @@ def local_retrain_fedprox(local_datasets, weights, mu, args, device="cpu"):
                            freezing_index = len(model) means we freez the entire network
     Implementing FedProx Algorithm from: https://arxiv.org/pdf/1812.06127.pdf
     """
-    if args.model == "lenet":
-        num_filters = [weights[0].shape[0], weights[2].shape[0]]
-        kernel_size = 5
-        input_dim = weights[4].shape[0]
-        hidden_dims = [weights[4].shape[1]]
-        output_dim = weights[-1].shape[0]
-        logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
+    # if args.model == "lenet":
+    #     num_filters = [weights[0].shape[0], weights[2].shape[0]]
+    #     kernel_size = 5
+    #     input_dim = weights[4].shape[0]
+    #     hidden_dims = [weights[4].shape[1]]
+    #     output_dim = weights[-1].shape[0]
+    #     logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
 
-        matched_cnn = LeNetContainer(
-                                    num_filters=num_filters,
-                                    kernel_size=kernel_size,
-                                    input_dim=input_dim,
-                                    hidden_dims=hidden_dims,
-                                    output_dim=output_dim)
-    elif args.model == "vgg":
-        matched_shapes = [w.shape for w in weights]
-        matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
-    elif args.model == "simple-cnn":
+    #     matched_cnn = LeNetContainer(
+    #                                 num_filters=num_filters,
+    #                                 kernel_size=kernel_size,
+    #                                 input_dim=input_dim,
+    #                                 hidden_dims=hidden_dims,
+    #                                 output_dim=output_dim)
+    # elif args.model == "vgg":
+    #     matched_shapes = [w.shape for w in weights]
+    #     matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
+    if args.model == "simple-cnn":
         # input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
         # [(9, 75), (9,), (19, 225), (19,), (475, 123), (123,), (123, 87), (87,), (87, 10), (10,)]
-        if args.dataset in ("cifar10", "cinic10"):
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
             input_channel = 3
         elif args.dataset == "mnist":
             input_channel = 1
@@ -855,8 +862,9 @@ def local_retrain_fedprox(local_datasets, weights, mu, args, device="cpu"):
                                         num_filters=num_filters, 
                                         kernel_size=5, 
                                         input_dim=input_dim, 
+                                        # input_dim=16*61*61,  
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         matched_cnn = ModerateCNN()
 
@@ -939,27 +947,27 @@ def local_retrain_fedprox(local_datasets, weights, mu, args, device="cpu"):
 
 
 def reconstruct_local_net(weights, args, ori_assignments=None, worker_index=0):
-    if args.model == "lenet":
-        num_filters = [weights[0].shape[0], weights[2].shape[0]]
-        kernel_size = 5
-        input_dim = weights[4].shape[0]
-        hidden_dims = [weights[4].shape[1]]
-        output_dim = weights[-1].shape[0]
-        logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
+    # if args.model == "lenet":
+    #     num_filters = [weights[0].shape[0], weights[2].shape[0]]
+    #     kernel_size = 5
+    #     input_dim = weights[4].shape[0]
+    #     hidden_dims = [weights[4].shape[1]]
+    #     output_dim = weights[-1].shape[0]
+    #     logger.info("Num filters: {}, Input dim: {}, hidden_dims: {}, output_dim: {}".format(num_filters, input_dim, hidden_dims, output_dim))
 
-        matched_cnn = LeNetContainer(
-                                    num_filters=num_filters,
-                                    kernel_size=kernel_size,
-                                    input_dim=input_dim,
-                                    hidden_dims=hidden_dims,
-                                    output_dim=output_dim)
-    elif args.model == "vgg":
-        matched_shapes = [w.shape for w in weights]
-        matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
-    elif args.model == "simple-cnn":
+    #     matched_cnn = LeNetContainer(
+    #                                 num_filters=num_filters,
+    #                                 kernel_size=kernel_size,
+    #                                 input_dim=input_dim,
+    #                                 hidden_dims=hidden_dims,
+    #                                 output_dim=output_dim)
+    # elif args.model == "vgg":
+    #     matched_shapes = [w.shape for w in weights]
+    #     matched_cnn = matched_vgg11(matched_shapes=matched_shapes)
+    if args.model == "simple-cnn":
         # input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
         # [(9, 75), (9,), (19, 225), (19,), (475, 123), (123,), (123, 87), (87,), (87, 10), (10,)]
-        if args.dataset in ("cifar10", "cinic10"):
+        if args.dataset in ("cifar10", "cinic10","plantifydr"):
             input_channel = 3
         elif args.dataset == "mnist":
             input_channel = 1
@@ -971,8 +979,9 @@ def reconstruct_local_net(weights, args, ori_assignments=None, worker_index=0):
                                         num_filters=num_filters, 
                                         kernel_size=5, 
                                         input_dim=input_dim, 
+                                        # input_dim=16*61*61,  
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
         #(260, 1188), (260,), (260, 2340), (260,), 
@@ -1234,6 +1243,7 @@ def BBP_MAP(nets_list, model_meta_data, layer_type, net_dataidx_map,
                             device="cpu"):
     # starting the neural matching
     models = nets_list
+    # print(traindata_cls_counts)
     cls_freqs = traindata_cls_counts
     n_classes = args_net_config[-1]
     it=5
@@ -1480,7 +1490,7 @@ def fedma_comm(batch_weights, model_meta_data, layer_type, net_dataidx_map,
     sigma0 = 1.0
 
     cls_freqs = traindata_cls_counts
-    n_classes = 10
+    n_classes = 38
     batch_freqs = pdm_prepare_freq(cls_freqs, n_classes)
     it=5
 
@@ -1514,7 +1524,8 @@ def fedma_comm(batch_weights, model_meta_data, layer_type, net_dataidx_map,
 
 
 if __name__ == "__main__":
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
     # Assuming that we are on a CUDA machine, this should print a CUDA device:
     logger.info(device)
@@ -1537,6 +1548,8 @@ if __name__ == "__main__":
 
     n_classes = len(np.unique(y_train))
     averaging_weights = np.zeros((args.n_nets, n_classes), dtype=np.float32)
+
+    # print(f"{n_classes=}")
 
     for i in range(n_classes):
         total_num_counts = 0

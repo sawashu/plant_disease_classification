@@ -159,22 +159,24 @@ def block_patching(w_j, L_next, assignment_j_c, layer_index, model_meta_data,
     elif layer_type == "fc":
         # we need to estimate the output shape here:
         if network_name == "simple-cnn":
-            if dataset in ("cifar10", "cinic10"):
+            if dataset in ("cifar10", "cinic10","plantifydr"):
                 shape_estimator = SimpleCNNContainerConvBlocks(input_channel=3, num_filters=matching_shapes, kernel_size=5)
             elif dataset == "mnist":
                 shape_estimator = SimpleCNNContainerConvBlocks(input_channel=1, num_filters=matching_shapes, kernel_size=5)
-        elif network_name == "moderate-cnn":
-            if dataset in ("cifar10", "cinic10"):
-                shape_estimator = ModerateCNNContainerConvBlocks(num_filters=matching_shapes)
-            elif dataset == "mnist":
-                shape_estimator = ModerateCNNContainerConvBlocksMNIST(num_filters=matching_shapes)
-        elif network_name == "lenet":
-            shape_estimator = LeNetContainer(num_filters=matching_shapes, kernel_size=5)
+        # elif network_name == "moderate-cnn":
+        #     if dataset in ("cifar10", "cinic10"):
+        #         shape_estimator = ModerateCNNContainerConvBlocks(num_filters=matching_shapes)
+        #     elif dataset == "mnist":
+        #         shape_estimator = ModerateCNNContainerConvBlocksMNIST(num_filters=matching_shapes)
+        # elif network_name == "lenet":
+        #     shape_estimator = LeNetContainer(num_filters=matching_shapes, kernel_size=5)
 
         if dataset in ("cifar10", "cinic10"):
             dummy_input = torch.rand(1, 3, 32, 32)
         elif dataset == "mnist":
             dummy_input = torch.rand(1, 1, 28, 28)
+        elif dataset == "plantifydr":
+            dummy_input = torch.rand(1, 3, 256, 256)
         estimated_output = shape_estimator(dummy_input)
         new_w_j = np.zeros((w_j.shape[0], estimated_output.view(-1).size()[0]))
         logger.info("estimated_output shape : {}".format(estimated_output.size()))
@@ -261,7 +263,7 @@ def match_layer(weights_bias, sigma_inv_layer, mean_prior, sigma_inv_prior, gamm
 
             global_weights = np.delete(global_weights, to_delete, axis=0)
             global_sigmas = np.delete(global_sigmas, to_delete, axis=0)
-
+        
             ## Match j
             global_weights, global_sigmas, popularity_counts, assignment_j = matching_upd_j(batch_weights_norm[j],
                                                                                             global_weights,

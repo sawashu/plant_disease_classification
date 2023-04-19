@@ -216,7 +216,7 @@ def local_retrain(local_datasets, weights, args, mode="bottom-up", freezing_inde
                                         kernel_size=5, 
                                         input_dim=input_dim, 
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
         #(260, 1188), (260,), (260, 2340), (260,), 
@@ -522,7 +522,7 @@ def local_retrain_fedavg(local_datasets, weights, args, device="cpu"):
                                         kernel_size=5, 
                                         input_dim=input_dim, 
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         matched_cnn = ModerateCNN()
 
@@ -676,7 +676,7 @@ def local_retrain_fedprox(local_datasets, weights, mu, args, device="cpu"):
                                         kernel_size=5, 
                                         input_dim=input_dim, 
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         matched_cnn = ModerateCNN()
 
@@ -838,7 +838,7 @@ def reconstruct_local_net(weights, args, ori_assignments=None, worker_index=0):
                                         kernel_size=5, 
                                         input_dim=input_dim, 
                                         hidden_dims=hidden_dims, 
-                                        output_dim=10)
+                                        output_dim=38)
     elif args.model == "moderate-cnn":
         #[(35, 27), (35,), (68, 315), (68,), (132, 612), (132,), (132, 1188), (132,), 
         #(260, 1188), (260,), (260, 2340), (260,), 

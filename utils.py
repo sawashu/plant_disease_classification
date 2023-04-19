@@ -95,7 +95,7 @@ def partition_data(dataset, datadir, logdir, partition, n_nets, alpha, args):
 
     elif dataset == 'plantifydr':
 
-        data_path = '/data/plantifydr_dataset/color'
+        data_path = os.path.normpath(os.getcwd()) + '/data/plantifydr_dataset/color'
 
         transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
@@ -914,7 +914,7 @@ def init_cnns(net_configs, n_nets):
     Please note that this part is hard coded right now
     '''
 
-    input_size = (16 * 5 * 5) # hard coded, defined by the SimpleCNN useds
+    input_size = (16 * 61 * 61) # hard coded, defined by the SimpleCNN useds
     output_size = net_configs[-1] #
     hidden_sizes = [120, 84]
 
@@ -954,8 +954,8 @@ def init_models(net_configs, n_nets, args):
         elif args.model == "vgg":
             cnn = vgg11()
         elif args.model == "simple-cnn":
-            if args.dataset in ("cifar10", "cinic10"):
-                cnn = SimpleCNN(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], output_dim=10)
+            if args.dataset in ("cifar10", "cinic10","plantifydr"):
+                cnn = SimpleCNN(input_dim=(16 * 61 * 61), hidden_dims=[120, 84], output_dim=38)
             elif args.dataset == "mnist":
                 cnn = SimpleCNNMNIST(input_dim=(16 * 4 * 4), hidden_dims=[120, 84], output_dim=10)
         elif args.model == "moderate-cnn":
@@ -1112,7 +1112,9 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None):
         train_dl = torch.utils.data.DataLoader(train_dataset,batch_size=train_bs,shuffle=True)
         test_dl = torch.utils.data.DataLoader(train_dataset,batch_size=test_bs,shuffle=True)
 
-        print("SUCCESSFULLY GOT DATA LOADED")
+        # print(len(train_dl))
+
+        # print("SUCCESSFULLY GOT DATA LOADED")
 
     return train_dl, test_dl
 
@@ -1255,7 +1257,7 @@ def pdm_prepare_weights_vggs(nets, device="cpu"):
 
 def pdm_prepare_freq(cls_freqs, n_classes):
     freqs = []
-
+    # print(n_classes)
     for net_i in sorted(cls_freqs.keys()):
         net_freqs = [0] * n_classes
 

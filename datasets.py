@@ -440,6 +440,8 @@ class ImageFolderTruncated(DatasetFolder):
 
 # CODE ADDED --------------------------------
 
+# Write in how we input our dataset
+
 class PlantDataset(data.Dataset):
     def __init__(self, image_paths, transform=False, class_to_index=None):
         self.image_paths = image_paths

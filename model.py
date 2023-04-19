@@ -63,12 +63,12 @@ class ConvBlock(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = x.view(-1, 16 * 61 * 61)
         return x
 
 
 class FCBlock(nn.Module):
-    def __init__(self, input_dim, hidden_dims, output_dim=10):
+    def __init__(self, input_dim, hidden_dims, output_dim=38):
         super(FCBlock, self).__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dims[0])
         self.fc2 = nn.Linear(hidden_dims[0], hidden_dims[1])
@@ -118,7 +118,7 @@ class FCBlockVGG(nn.Module):
 
 
 class SimpleCNN(nn.Module):
-    def __init__(self, input_dim, hidden_dims, output_dim=10):
+    def __init__(self, input_dim, hidden_dims, output_dim=38):
         super(SimpleCNN, self).__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
@@ -126,14 +126,14 @@ class SimpleCNN(nn.Module):
         
         # for now, we hard coded this network
         # i.e. we fix the number of hidden layers i.e. 2 layers
-        self.fc1 = nn.Linear(input_dim, hidden_dims[0])
+        self.fc1 = nn.Linear(16 * 61 * 61, hidden_dims[0])
         self.fc2 = nn.Linear(hidden_dims[0], hidden_dims[1])
         self.fc3 = nn.Linear(hidden_dims[1], output_dim)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = x.view(-1, 16 * 61 * 61)
 
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
@@ -166,7 +166,7 @@ class SimpleCNNMNIST(nn.Module):
 
 
 class SimpleCNNContainer(nn.Module):
-    def __init__(self, input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=10):
+    def __init__(self, input_channel, num_filters, kernel_size, input_dim, hidden_dims, output_dim=38):
         super(SimpleCNNContainer, self).__init__()
         '''
         A testing cnn container, which allows initializing a CNN with given dims
