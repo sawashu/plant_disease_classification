@@ -32,18 +32,18 @@ cnn_optimizer = torch.optim.SGD(cnn.parameters(), lr = 0.01)
 
 # criterion
 cnn_criterion = nn.CrossEntropyLoss()
-fedMA_cnn_criterion = nn.CrossEntropyLoss()
+s_cnn_criterion = nn.CrossEntropyLoss()
 
 # training loss, error rate
-cnn_loss_err = np.ndarray((2, Max_epochs))  # matrix to save loss (col 1), error rate (col 2)
+cnn_loss_err = np.ndarray((6, Max_epochs))  # matrix to save loss (col 1), error rate (col 2)
 # s_cnn_loss_err = np.ndarray((2, Max_epochs))  # matrix to save loss (col 1), error rate (col 2)
 
 # validation loss, error rate
-cnn_val_loss_err = np.ndarray((2, Max_epochs))  # matrix to save loss (col 1), error rate (col 2)
+# cnn_val_loss_err = np.ndarray((2, Max_epochs))  # matrix to save loss (col 1), error rate (col 2)
 # s_cnn_val_loss_err = np.ndarray((2, Max_epochs))  # matrix to save loss (col 1), error rate (col 2)
 
 # testing error:
-cnn_test_loss_err = []
+# cnn_test_loss_err = []
 # s_cnn_test_loss_err = []
 #########################################################################################################
 # Run both cnn models
@@ -111,8 +111,8 @@ for i in range(Max_epochs):
                 # s cnn
 
     cnn_val_error_rate = 1 - (np.divide(cnn_val_num_correct, cnn_val_num_samples)) 
-    cnn_val_loss_err[0,i] = cnn_val_running_loss
-    cnn_val_loss_err[1,i] = cnn_val_error_rate
+    cnn_loss_err[2,i] = cnn_val_running_loss
+    cnn_loss_err[3,i] = cnn_val_error_rate
     print(f'loss = {cnn_val_running_loss}   error rate = {cnn_val_error_rate}')
 
     # s cnn  
@@ -120,7 +120,8 @@ for i in range(Max_epochs):
 print('Starting prediction....')
 # end Max Epochs, now use trained model to predict
 cnn_test_loss, cnn_test_error_rate = cnn.predict(test_loader, criterion = nn.CrossEntropyLoss())
-cnn_test_loss_err.append(cnn_test_loss, cnn_test_error_rate)
+cnn_loss_err[4,1] = cnn_test_loss
+cnn_loss_err[5,1] = cnn_test_error_rate
 
 # s cnn
 
@@ -128,8 +129,8 @@ cnn_test_loss_err.append(cnn_test_loss, cnn_test_error_rate)
 np.savetxt("cnn_training.csv", cnn_loss_err,
               delimiter = ",")
 
-np.savetxt("cnn_validation.csv", cnn_val_loss_err,
-              delimiter = ",")
+# np.savetxt("cnn_validation.csv", cnn_val_loss_err,
+#               delimiter = ",")
 
-np.savetxt("cnn_test.csv", cnn_test_loss_err,
-              delimiter = ",")
+# np.savetxt("cnn_test.csv", cnn_test_loss_err,
+#               delimiter = ",")
