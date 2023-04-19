@@ -129,8 +129,3 @@ cnn_loss_err[5,0] = cnn_test_error_rate
 np.savetxt("cnn_training.csv", cnn_loss_err,
               delimiter = ",")
 
-# np.savetxt("cnn_validation.csv", cnn_val_loss_err,
-#               delimiter = ",")
-
-# np.savetxt("cnn_test.csv", cnn_test_loss_err,
-#               delimiter = ",")
