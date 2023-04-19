@@ -51,6 +51,21 @@ class MyCNN(nn.Module):
 
         return o
     
+    def accuracy(self, test_loader):
+
+        num_correct, num_samples = 0, 0
+
+        with torch.no_grad(): # no backprop step so turn off gradients
+            for images, labels in test_loader:
+                # Compute prediction output and accuracy
+                out = self(images)
+                num_correct += (out.argmax(-1) == labels).sum()
+                num_samples += len(labels)
+
+        acc = float(num_correct) / float(num_samples)
+
+        return acc
+    
     def fit(self, images, labels, criterion, optimizer):
 
         optimizer.zero_grad()
