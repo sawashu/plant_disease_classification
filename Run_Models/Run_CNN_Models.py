@@ -50,7 +50,7 @@ cnn_loss_err = np.ndarray((6, Max_epochs))  # matrix to save loss (col 1), error
 #########################################################################################################
 for i in range(Max_epochs):
 
-    print(f'Epoch {i}:')
+    # print(f'Epoch {i}:')
 
     cnn_running_loss = 0.0
     cnn_num_correct, cnn_num_samples = 0, 0
@@ -58,33 +58,33 @@ for i in range(Max_epochs):
     # s_cnn_running_loss = 0.0
     # s_cnn_num_correct, num_samples = 0, 0
 
-    print('Starting training...')
+    # print('Starting training...')
     for j,(images,labels) in enumerate(train_loader):
         
-        if j > 2:
-            break
-        else:
-            # run cnn training part
-            cnn_cur_loss, cnn_cur_correct = cnn.fit(images, labels, cnn_criterion, cnn_optimizer)
-            cnn_running_loss += cnn_cur_loss
-            cnn_num_correct += cnn_cur_correct
-            cnn_num_samples += len(labels)
+    # if j > 2:
+    #     break
+    # else:
+        # run cnn training part
+        cnn_cur_loss, cnn_cur_correct = cnn.fit(images, labels, cnn_criterion, cnn_optimizer)
+        cnn_running_loss += cnn_cur_loss
+        cnn_num_correct += cnn_cur_correct
+        cnn_num_samples += len(labels)
 
-            # if j % 2 == 0 and j < 20:
-            #     print('num images j: ', j, 'current loss = ', cnn_cur_loss)
+        # if j % 2 == 0 and j < 20:
+        #     print('num images j: ', j, 'current loss = ', cnn_cur_loss)
 
-            # run simple cnn part
+        # run simple cnn part
 
     # cnn save training data
     cnn_error_rate = 1 - (np.divide(cnn_num_correct, cnn_num_samples))   
     
     cnn_loss_err[0,i] = cnn_running_loss
     cnn_loss_err[1,i] = cnn_error_rate
-    print(f'loss = {cnn_running_loss}   error rate = {cnn_error_rate}')
+    # print(f'loss = {cnn_running_loss}   error rate = {cnn_error_rate}')
 
     # simple cnn part
 
-    print('Starting validation...')
+    # print('Starting validation...')
     # cnn validation
     cnn_val_running_loss = 0.0
     cnn_val_num_correct, cnn_val_num_samples = 0, 0
@@ -96,32 +96,32 @@ for i in range(Max_epochs):
     with torch.no_grad():
         for j,(images, labels) in enumerate(valid_loader):
 
-            if j>2:
-                break
-            else:
+        # if j>2:
+        #     break
+        # else:
 
-                cnn_val_loss, cnn_val_correct = cnn.val_predict(images, labels, criterion = nn.CrossEntropyLoss())
-                cnn_val_running_loss += cnn_val_loss
-                cnn_val_num_correct += cnn_val_correct
-                cnn_val_num_samples += len(labels)
+            cnn_val_loss, cnn_val_correct = cnn.val_predict(images, labels, criterion = nn.CrossEntropyLoss())
+            cnn_val_running_loss += cnn_val_loss
+            cnn_val_num_correct += cnn_val_correct
+            cnn_val_num_samples += len(labels)
 
-                # if j % 2 == 0 and j < 20:
-                #     print('num images j: ', j, 'current loss = ', cnn_cur_loss)
+            # if j % 2 == 0 and j < 20:
+            #     print('num images j: ', j, 'current loss = ', cnn_cur_loss)
 
-                # s cnn
+            # s cnn
 
     cnn_val_error_rate = 1 - (np.divide(cnn_val_num_correct, cnn_val_num_samples)) 
     cnn_loss_err[2,i] = cnn_val_running_loss
     cnn_loss_err[3,i] = cnn_val_error_rate
-    print(f'loss = {cnn_val_running_loss}   error rate = {cnn_val_error_rate}')
+    # print(f'loss = {cnn_val_running_loss}   error rate = {cnn_val_error_rate}')
 
     # s cnn  
     
-print('Starting prediction....')
+# print('Starting prediction....')
 # end Max Epochs, now use trained model to predict
 cnn_test_loss, cnn_test_error_rate = cnn.predict(test_loader, criterion = nn.CrossEntropyLoss())
-cnn_loss_err[4,1] = cnn_test_loss
-cnn_loss_err[5,1] = cnn_test_error_rate
+cnn_loss_err[4,0] = cnn_test_loss
+cnn_loss_err[5,0] = cnn_test_error_rate
 
 # s cnn
 
