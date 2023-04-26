@@ -49,8 +49,49 @@ Project Organization
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
     │       └── visualize.py
     │
+    ├── our_pFedHN
+    │   ├── __init__.py 
+    │   │
+    │   ├── Generate_Dataset         <- Create dataset of plant disease
+    │   │   |
+    |   |   ├── split_dataset_train_test.py   
+    |   |   ├── train_val_test_split   <- actual dataset for machine learning
+    |   |   |
+    |   |   └── plant_doc_and_plant_village_images   <- actual dataset
+    │   |
+    │   ├── pfedhn_hetro_res       <- directory to save result
+    │   │   └── results_50_inner_steps_seed_42.json     <- result of pFedHN with json file
+    |   |
+    |   ├── pred_res      <- examples of input images and prediction result
+    │   │
+    │   ├── pred_res1        <- examples of input images and prediction result part 2
+    |   |
+    |   │
+    |   ├── dataset.py        <- dataset preprocessing for pFedHN
+    │   │ 
+    |   ├── models.py       <- model CNN and hyper networks 
+    |   |
+    |   ├── node.py        <- client class for federated learning
+    |   |
+    |   ├── requirements.txt        <- requirements packages
+    |   |
+    |   ├── t2.py       <- edit version of pFedHN main file to apply into our plant disease classifcation task
+    │   │ 
+    |   ├── test_ave_acc.png        <- plot of test average accuracy
+    |   |
+    |   ├── test_ave_loss.png        <- plot of test average loss
+    |   |
+    |   ├── trainer.py        <- original pFedHN main file
+    |   |
+    |   ├── utils.py        <- utils for pFedHN
+    |   |
+    |   ├── val_ave_acc.png       <- plot of validation average accuracy
+    |   | 
+    │   └── val_ave_loss.png  <- plot of validation average loss
+    │
+    |
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
-
+    
 
 --------
 
