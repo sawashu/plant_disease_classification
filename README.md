@@ -1,7 +1,7 @@
 plant_disease_classification
 ==============================
 
-This project combines two plant disease datasets Plant Village https://github.com/spMohanty/PlantVillage-Dataset and Plant Doc https://doi.org/10.1145/3371158.3371196 to train several ML models including FedMAhttps://github.com/IBM/FedMA, pFedHN https://github.com/AvivSham/pFedHN, and inception CNN https://www.mdpi.com/2079-9292/10/12/1388 to determine the best model for predicting plant diseases.
+This project combines two plant disease datasets Plant Village https://github.com/spMohanty/PlantVillage-Dataset and Plant Doc https://doi.org/10.1145/3371158.3371196 to train several ML models including FedMA https://github.com/IBM/FedMA, pFedHN https://github.com/AvivSham/pFedHN, and inception CNN https://www.mdpi.com/2079-9292/10/12/1388 to determine the best model for predicting plant diseases.
 
 
 Project Organization
